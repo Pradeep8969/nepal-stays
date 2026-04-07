@@ -27,6 +27,7 @@ export type Database = {
           total_price: number
           updated_at: string
           user_id: string
+          guest_phone: string
         }
         Insert: {
           check_in_date: string
@@ -40,6 +41,7 @@ export type Database = {
           total_price: number
           updated_at?: string
           user_id: string
+          guest_phone?: string
         }
         Update: {
           check_in_date?: string
@@ -53,6 +55,7 @@ export type Database = {
           total_price?: number
           updated_at?: string
           user_id?: string
+          guest_phone?: string
         }
         Relationships: [
           {

@@ -50,11 +50,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { error, data } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } },
+      options: { 
+        data: { full_name: fullName },
+        emailRedirectTo: `${window.location.origin}/auth`
+      },
     });
+    
+    // If signup successful but no email confirmation needed (user already confirmed)
+    if (!error && data.user && !data.user.email_confirmed_at) {
+      return { error: new Error('Please check your email to verify your account.') };
+    }
+    
     return { error: error as Error | null };
   };
 

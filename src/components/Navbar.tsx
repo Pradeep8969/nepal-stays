@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Mountain, Menu, X } from 'lucide-react';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { useState } from 'react';
 
 export default function Navbar() {
@@ -27,6 +28,7 @@ export default function Navbar() {
           <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">Hotels</Link>
           {user && <Link to="/my-bookings" className="text-sm text-muted-foreground hover:text-foreground">My Bookings</Link>}
           {isAdmin && <Link to="/admin" className="text-sm text-muted-foreground hover:text-foreground">Admin</Link>}
+          <ThemeToggle />
           {user ? (
             <Button variant="outline" size="sm" onClick={handleSignOut}>Sign Out</Button>
           ) : (
@@ -46,6 +48,10 @@ export default function Navbar() {
             <Link to="/" className="text-sm text-muted-foreground" onClick={() => setMenuOpen(false)}>Hotels</Link>
             {user && <Link to="/my-bookings" className="text-sm text-muted-foreground" onClick={() => setMenuOpen(false)}>My Bookings</Link>}
             {isAdmin && <Link to="/admin" className="text-sm text-muted-foreground" onClick={() => setMenuOpen(false)}>Admin</Link>}
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Theme</span>
+              <ThemeToggle />
+            </div>
             {user ? (
               <Button variant="outline" size="sm" onClick={() => { handleSignOut(); setMenuOpen(false); }}>Sign Out</Button>
             ) : (

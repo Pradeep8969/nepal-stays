@@ -26,7 +26,11 @@ export default function Auth() {
       if (error) {
         toast({ title: 'Error', description: error.message, variant: 'destructive' });
       } else {
-        toast({ title: 'Account created!', description: 'Please check your email to verify your account.' });
+        toast({ 
+          title: 'Account created!', 
+          description: 'Your account has been created successfully. You can now sign in.' 
+        });
+        setIsSignUp(false); // Switch to sign in mode
       }
     } else {
       const { error } = await signIn(email, password);

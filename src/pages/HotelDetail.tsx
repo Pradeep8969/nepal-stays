@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { MapPin, Star, Users, Calendar } from 'lucide-react';
+import { MapPin, Star, Users, Calendar, Phone } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 import { differenceInDays, format, addDays } from 'date-fns';
 
@@ -24,6 +24,7 @@ export default function HotelDetail() {
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState(1);
   const [roomType, setRoomType] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
   const [booking, setBooking] = useState(false);
 
   useEffect(() => {
@@ -48,6 +49,10 @@ export default function HotelDetail() {
   const handleBook = async () => {
     if (!user) { navigate('/auth'); return; }
     if (nights <= 0) { toast({ title: 'Invalid dates', description: 'Check-out must be after check-in.', variant: 'destructive' }); return; }
+    if (!guestPhone || guestPhone.length < 10) { 
+      toast({ title: 'Invalid phone', description: 'Please enter a valid phone number for contact.', variant: 'destructive' }); 
+      return; 
+    }
     if (!hotel) return;
 
     setBooking(true);
@@ -76,6 +81,7 @@ export default function HotelDetail() {
       guests,
       room_type: roomType,
       total_price: totalPrice,
+      guest_phone: guestPhone,
     });
 
     if (error) {
@@ -122,6 +128,15 @@ export default function HotelDetail() {
             <CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5 text-primary" /> Book This Hotel</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Hotel Summary */}
+            <div className="rounded-lg bg-muted/50 p-3">
+              <h4 className="font-semibold text-sm mb-2">{hotel.name}</h4>
+              <p className="text-xs text-muted-foreground line-clamp-3">{hotel.description}</p>
+              <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{hotel.location}</span>
+                <span className="flex items-center gap-1"><Star className="h-3 w-3" />{hotel.rating}</span>
+              </div>
+            </div>
             <div className="space-y-2">
               <Label>Check-in</Label>
               <Input type="date" min={today} value={checkIn} onChange={e => setCheckIn(e.target.value)} />
@@ -145,6 +160,19 @@ export default function HotelDetail() {
                   {roomTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Guest Phone Number</Label>
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-muted-foreground" />
+                <Input 
+                  type="tel" 
+                  placeholder="+977-XXXXXXXXX" 
+                  value={guestPhone} 
+                  onChange={e => setGuestPhone(e.target.value)}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">Required for contact during your stay</p>
             </div>
 
             {nights > 0 && (
