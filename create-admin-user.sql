@@ -15,7 +15,7 @@
 -- Step 1: Create the auth user in Supabase Dashboard
 -- Go to Supabase Authentication > Users > Create User
 -- Email: admin@gmail.com
--- Password: admin
+-- Password: admin123
 -- Email confirmed: Yes
 
 -- Step 2: Set admin role for the user
@@ -87,6 +87,6 @@ END $$;
 
 -- Admin credentials:
 -- Email: admin@gmail.com
--- Password: admin
+-- Password: admin123
 -- 4. In the user's metadata, add: {"role": "admin"}
 -- 5. Or run the UPDATE statement above to set the role
