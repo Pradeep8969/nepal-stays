@@ -108,12 +108,7 @@ export default function MyBookings() {
                   <img src={b.hotels.image_url} alt={b.hotels.name} className="h-24 w-32 rounded-md object-cover" />
                 )}
                 <div className="flex-1 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-foreground">{b.hotels?.name}</h3>
-                    <Badge variant={b.status === 'confirmed' ? 'default' : 'secondary'}>
-                      {b.status}
-                    </Badge>
-                  </div>
+                  <h3 className="font-semibold text-foreground">{b.hotels?.name}</h3>
                   <p className="text-sm text-muted-foreground">{b.hotels?.location} · {b.room_type}</p>
                   <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1"><CalendarDays className="h-3.5 w-3.5" />{format(new Date(b.check_in_date), 'MMM d')} → {format(new Date(b.check_out_date), 'MMM d, yyyy')}</span>
