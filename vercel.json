@@ -9,6 +9,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/my-profile",
+      "destination": "/index.html"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }

@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import HotelDetail from "./pages/HotelDetail";
 import Auth from "./pages/Auth";
 import MyBookings from "./pages/MyBookings";
+import MyProfile from "./pages/MyProfile";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
@@ -17,7 +18,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="system" storageKey="nepal-stays-theme">
+    <ThemeProvider defaultTheme="light" storageKey="nepal-stays-theme">
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -29,6 +30,7 @@ const App = () => (
               <Route path="/hotel/:id" element={<HotelDetail />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/my-bookings" element={<MyBookings />} />
+              <Route path="/my-profile" element={<MyProfile />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
