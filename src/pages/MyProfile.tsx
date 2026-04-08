@@ -237,13 +237,26 @@ export default function MyProfile() {
   const fetchRecentBookings = async () => {
     if (!user) return;
     
-    const { data } = await supabase
+    console.log('Fetching bookings for user:', user.id);
+    
+    const { data, error } = await supabase
       .from('bookings')
       .select('id, check_in_date, check_out_date, guests, room_type, total_price, status, created_at, guest_phone, hotels(name, location, image_url)')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     
-    setRecentBookings((data as unknown as BookingWithHotel[]) || []);
+    if (error) {
+      console.error('Error fetching bookings:', error);
+      toast({
+        title: 'Error',
+        description: `Failed to load bookings: ${error.message}`,
+        variant: 'destructive',
+      });
+      setRecentBookings([]);
+    } else {
+      console.log('Bookings fetched:', data);
+      setRecentBookings((data as unknown as BookingWithHotel[]) || []);
+    }
   };
 
   useEffect(() => {
