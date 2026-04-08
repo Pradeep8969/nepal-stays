@@ -308,25 +308,33 @@ export default function MyProfile() {
                     </Button>
                   </label>
 
-                  {(photoPreview || userProfile?.profile_photo) && (
+                  {photoPreview && (
                     <div className="flex gap-2">
-                      {photoPreview && (
-                        <Button 
-                          onClick={handleUploadPhoto} 
-                          disabled={isUploadingPhoto}
-                          className="flex-1"
-                        >
-                          {isUploadingPhoto ? 'Saving...' : 'Save Photo'}
-                        </Button>
-                      )}
+                      <Button 
+                        onClick={handleUploadPhoto} 
+                        disabled={isUploadingPhoto}
+                        className="flex-1"
+                      >
+                        {isUploadingPhoto ? 'Saving...' : 'Save Photo'}
+                      </Button>
                       <Button 
                         variant="outline" 
                         onClick={handleRemovePhoto}
                         className="flex-1"
                       >
-                        Remove Photo
+                        Cancel
                       </Button>
                     </div>
+                  )}
+                  
+                  {userProfile?.profile_photo && !photoPreview && (
+                    <Button 
+                      variant="outline" 
+                      onClick={handleRemovePhoto}
+                      className="w-full"
+                    >
+                      Remove Photo
+                    </Button>
                   )}
                 </div>
               </div>
