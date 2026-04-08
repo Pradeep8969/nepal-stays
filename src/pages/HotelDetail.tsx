@@ -42,8 +42,40 @@ export default function HotelDetail() {
     fetch();
   }, [id]);
 
+  // Room type pricing configuration
+  const getRoomTypePrice = (roomType: string) => {
+    const basePrice = hotel?.price_per_night || 100;
+    const pricing: { [key: string]: number } = {
+      'Standard': basePrice * 1.0,      // $100 per night
+      'Deluxe': basePrice * 1.5,        // $150 per night
+      'Suite': basePrice * 2.0,         // $200 per night
+      'Garden View': basePrice * 1.3,   // $130 per night
+      'Heritage Room': basePrice * 1.4, // $140 per night
+      'Spiritual Suite': basePrice * 1.6, // $160 per night
+      'Temple View': basePrice * 1.35,  // $135 per night
+      'Executive Suite': basePrice * 1.8, // $180 per night
+      'Royal Suite': basePrice * 2.5,    // $250 per night
+      'Forest Suite': basePrice * 1.7,    // $170 per night
+      'Sunset View': basePrice * 1.45,   // $145 per night
+      'Villa': basePrice * 3.0,          // $300 per night
+      'Yoga Suite': basePrice * 1.55,    // $155 per night
+      'Adventure Suite': basePrice * 1.65, // $165 per night
+      'Eco Room': basePrice * 1.2,       // $120 per night
+      'Village View': basePrice * 1.25,  // $125 per night
+      'Family Room': basePrice * 1.75    // $175 per night
+    };
+    return pricing[roomType] || basePrice;
+  };
+
+  // Calculate number of rooms needed (3 guests per room max)
+  const calculateRoomsNeeded = (guestCount: number) => {
+    return Math.ceil(guestCount / 3);
+  };
+
   const nights = checkIn && checkOut ? differenceInDays(new Date(checkOut), new Date(checkIn)) : 0;
-  const totalPrice = hotel ? nights * hotel.price_per_night : 0;
+  const roomsNeeded = calculateRoomsNeeded(guests);
+  const pricePerRoom = roomType ? getRoomTypePrice(roomType) : (hotel?.price_per_night || 100);
+  const totalPrice = nights > 0 ? nights * pricePerRoom * roomsNeeded : 0;
   const today = format(new Date(), 'yyyy-MM-dd');
   const minCheckOut = checkIn ? format(addDays(new Date(checkIn), 1), 'yyyy-MM-dd') : today;
 
@@ -89,7 +121,8 @@ export default function HotelDetail() {
     if (error) {
       toast({ title: 'Booking failed', description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Booking confirmed!', description: `${hotel.name} - ${nights} night(s) for $${totalPrice}` });
+      const roomText = roomsNeeded > 1 ? `${roomsNeeded} rooms` : '1 room';
+      toast({ title: 'Booking confirmed!', description: `${hotel.name} - ${nights} night(s), ${roomText} for $${totalPrice}` });
       navigate('/my-bookings');
     }
     setBooking(false);
@@ -137,7 +170,7 @@ export default function HotelDetail() {
           <div className="mb-4 flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-1 text-muted-foreground"><MapPin className="h-4 w-4" />{hotel.location}</div>
             <div className="flex items-center gap-1 text-warning"><Star className="h-4 w-4 fill-current" />{hotel.rating}</div>
-            <span className="text-lg font-bold text-primary">${hotel.price_per_night}/night</span>
+            <span className="text-lg font-bold text-primary">${pricePerRoom}/night</span>
           </div>
           <p className="mb-6 leading-relaxed text-muted-foreground">{hotel.description}</p>
 
@@ -173,6 +206,7 @@ export default function HotelDetail() {
                 <Users className="h-4 w-4 text-muted-foreground" />
                 <Input type="number" min={1} max={10} value={guests} onChange={e => setGuests(Number(e.target.value))} />
               </div>
+              <p className="text-xs text-muted-foreground">Maximum 3 guests per room. Additional rooms will be added automatically.</p>
             </div>
             <div className="space-y-2">
               <Label>Room Type</Label>
@@ -199,7 +233,22 @@ export default function HotelDetail() {
 
             {nights > 0 && (
               <div className="rounded-lg bg-accent p-3">
-                <div className="flex justify-between text-sm"><span>{nights} night(s) × ${hotel.price_per_night}</span><span className="font-semibold">${totalPrice}</span></div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>{nights} night(s) × ${pricePerRoom} × {roomsNeeded} {roomsNeeded > 1 ? 'rooms' : 'room'}</span>
+                    <span className="font-semibold">${totalPrice}</span>
+                  </div>
+                  {roomsNeeded > 1 && (
+                    <div className="text-xs text-muted-foreground">
+                      {guests} guests require {roomsNeeded} rooms (3 guests per room max)
+                    </div>
+                  )}
+                  {roomType && (
+                    <div className="text-xs text-muted-foreground">
+                      {roomType} room rate: ${pricePerRoom}/night
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
