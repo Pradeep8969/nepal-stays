@@ -65,6 +65,13 @@ export function ThemeProvider({
     setShowThemeDialog
   }
 
+  const handleThemeSelection = (selectedTheme: Theme) => {
+    localStorage.setItem(storageKey, selectedTheme)
+    localStorage.setItem(`${storageKey}-seen`, 'true')
+    setTheme(selectedTheme)
+    setShowThemeDialog(false)
+  }
+
   return (
     <>
       <ThemeProviderContext.Provider {...props} value={value}>
@@ -74,11 +81,11 @@ export function ThemeProvider({
       {showThemeDialog && (
         <ThemeSelectionDialog
           isOpen={showThemeDialog}
-          onClose={() => setShowThemeDialog(false)}
-          onSelectTheme={(selectedTheme) => {
-            setTheme(selectedTheme)
+          onClose={() => {
+            localStorage.setItem(`${storageKey}-seen`, 'true')
             setShowThemeDialog(false)
           }}
+          onSelectTheme={handleThemeSelection}
         />
       )}
     </>
