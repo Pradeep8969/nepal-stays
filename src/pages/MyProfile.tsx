@@ -86,30 +86,57 @@ export default function MyProfile() {
   const handleProfilePhotoUpdate = async (photoUrl: string) => {
     if (!user) return;
     
+    console.log('Updating profile photo for user:', user.id);
+    console.log('Photo URL length:', photoUrl.length);
+    
     try {
-      const { error } = await supabase
+      // First try to update existing profile
+      const { data, error } = await supabase
         .from('profiles')
-        .upsert({
-          user_id: user.id,
-          full_name: userProfile?.full_name || user.user_metadata?.full_name || 'User',
-          email: userProfile?.email || user.email || '',
-          phone: userProfile?.phone || user.user_metadata?.phone || '',
-          profile_photo: photoUrl,
-          created_at: userProfile?.created_at || user.created_at
-        });
+        .update({ profile_photo: photoUrl })
+        .eq('user_id', user.id)
+        .select();
 
       if (error) {
         console.error('Error updating profile photo:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to update profile photo.',
-          variant: 'destructive',
-        });
+        
+        // If update fails, try upsert
+        console.log('Update failed, trying upsert...');
+        const { data: upsertData, error: upsertError } = await supabase
+          .from('profiles')
+          .upsert({
+            user_id: user.id,
+            full_name: userProfile?.full_name || user.user_metadata?.full_name || 'User',
+            email: userProfile?.email || user.email || '',
+            phone: userProfile?.phone || user.user_metadata?.phone || '',
+            profile_photo: photoUrl,
+            created_at: userProfile?.created_at || user.created_at
+          })
+          .select();
+
+        if (upsertError) {
+          console.error('Upsert also failed:', upsertError);
+          toast({
+            title: 'Error',
+            description: `Failed to save photo: ${upsertError.message}`,
+            variant: 'destructive',
+          });
+          return;
+        } else {
+          console.log('Upsert successful:', upsertData);
+        }
       } else {
-        // Update local state
-        setUserProfile(prev => prev ? { ...prev, profile_photo: photoUrl } : null);
-        setPhotoPreview(null);
+        console.log('Update successful:', data);
       }
+
+      // Update local state
+      setUserProfile(prev => prev ? { ...prev, profile_photo: photoUrl } : null);
+      setPhotoPreview(null);
+      
+      toast({
+        title: 'Success',
+        description: 'Profile photo saved successfully.',
+      });
     } catch (error) {
       console.error('Error updating profile photo:', error);
       toast({
@@ -157,21 +184,29 @@ export default function MyProfile() {
     if (!photoPreview || !fileInputRef.current?.files?.[0]) return;
 
     setIsUploadingPhoto(true);
+    console.log('Starting photo upload...');
     
     try {
       const file = fileInputRef.current.files[0];
+      console.log('File selected:', file.name, 'Size:', file.size);
       
       // Convert to base64 and store
       const reader = new FileReader();
       reader.onload = async (e) => {
         const base64String = e.target?.result as string;
+        console.log('Base64 conversion completed, length:', base64String.length);
         
         // Store the base64 image
         await handleProfilePhotoUpdate(base64String);
         
+        setIsUploadingPhoto(false);
+      };
+      reader.onerror = (error) => {
+        console.error('FileReader error:', error);
         toast({
-          title: 'Success',
-          description: 'Profile photo updated successfully.',
+          title: 'Error',
+          description: 'Failed to read photo file.',
+          variant: 'destructive',
         });
         setIsUploadingPhoto(false);
       };
