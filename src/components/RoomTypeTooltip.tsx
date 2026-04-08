@@ -10,6 +10,8 @@ export function RoomTypeTooltip({ roomType, description }: RoomTypeTooltipProps)
   const [showTooltip, setShowTooltip] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
+  
+  // Deployment timestamp: 2025-04-08-10-21
 
   useEffect(() => {
     if (showTooltip && triggerRef.current) {
