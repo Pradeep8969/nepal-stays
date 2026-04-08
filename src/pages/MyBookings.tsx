@@ -76,13 +76,13 @@ export default function MyBookings() {
 
   const canCancel = (checkIn: string, status: string) => {
     const validStatuses = ['confirmed', 'pending', null, undefined, ''];
-    return (validStatuses.includes(status) || !status) && differenceInDays(new Date(checkIn), new Date()) >= 2;
+    return (validStatuses.includes(status) || !status) && differenceInDays(new Date(checkIn), new Date()) >= 1;
   };
 
   const getCancelReason = (checkIn: string, status: string) => {
     const daysUntilCheckIn = differenceInDays(new Date(checkIn), new Date());
     if (daysUntilCheckIn < 0) return "This booking has already passed";
-    if (daysUntilCheckIn < 2) return "Cannot cancel within 48 hours of check-in";
+    if (daysUntilCheckIn < 1) return "Cannot cancel within 24 hours of check-in";
     if (status === 'cancelled') return "This booking is already cancelled";
     return null;
   };
