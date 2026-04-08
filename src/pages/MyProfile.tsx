@@ -8,7 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { differenceInDays, format } from 'date-fns';
-import { ProfilePhotoUpload } from '@/components/ProfilePhotoUpload';
 import { 
   User, 
   Mail, 
@@ -23,7 +22,8 @@ import {
   LogOut,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Camera
 } from 'lucide-react';
 
 interface UserProfile {
