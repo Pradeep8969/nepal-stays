@@ -9,19 +9,43 @@
 -- For now, we'll create a profile record and you can manually create the auth user
 
 -- Create admin profile record
-INSERT INTO public.profiles (
-  user_id,
-  full_name,
-  email,
-  phone,
-  created_at
-) VALUES (
-  'admin-user-id', -- This will be replaced with actual auth user ID
-  'Admin User',
-  'admin@nepalstays.com',
-  '+977-9812345678',
-  NOW()
-) ON CONFLICT (user_id) DO NOTHING;
+-- Note: Check if phone column exists first, then use appropriate INSERT
+DO $$
+BEGIN
+    -- Check if phone column exists
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'profiles' 
+        AND column_name = 'phone'
+        AND table_schema = 'public'
+    ) THEN
+        INSERT INTO public.profiles (
+          user_id,
+          full_name,
+          email,
+          phone,
+          created_at
+        ) VALUES (
+          'admin-user-id', -- This will be replaced with actual auth user ID
+          'Admin User',
+          'admin@nepalstays.com',
+          '+977-9812345678',
+          NOW()
+        ) ON CONFLICT (user_id) DO NOTHING;
+    ELSE
+        INSERT INTO public.profiles (
+          user_id,
+          full_name,
+          email,
+          created_at
+        ) VALUES (
+          'admin-user-id', -- This will be replaced with actual auth user ID
+          'Admin User',
+          'admin@nepalstays.com',
+          NOW()
+        ) ON CONFLICT (user_id) DO NOTHING;
+    END IF;
+END $$;
 
 -- Alternative: Update existing user to be admin
 -- If you already have a user, you can update their metadata to make them admin
