@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -52,6 +52,10 @@ export default function MyProfile() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [showInvoice, setShowInvoice] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [recentBookings, setRecentBookings] = useState<BookingWithHotel[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -104,6 +108,7 @@ export default function MyProfile() {
       } else {
         // Update local state
         setUserProfile(prev => prev ? { ...prev, profile_photo: photoUrl } : null);
+        setPhotoPreview(null);
       }
     } catch (error) {
       console.error('Error updating profile photo:', error);
@@ -113,6 +118,85 @@ export default function MyProfile() {
         variant: 'destructive',
       });
     }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Error',
+        description: 'Please select an image file.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: 'Error',
+        description: 'Image size should be less than 5MB.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setPhotoPreview(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleUploadPhoto = async () => {
+    if (!photoPreview || !fileInputRef.current?.files?.[0]) return;
+
+    setIsUploadingPhoto(true);
+    
+    try {
+      const file = fileInputRef.current.files[0];
+      
+      // Convert to base64 and store
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64String = e.target?.result as string;
+        
+        // Store the base64 image
+        await handleProfilePhotoUpdate(base64String);
+        
+        toast({
+          title: 'Success',
+          description: 'Profile photo updated successfully.',
+        });
+        setIsUploadingPhoto(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to upload photo. Please try again.',
+        variant: 'destructive',
+      });
+      setIsUploadingPhoto(false);
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    setPhotoPreview(null);
+    await handleProfilePhotoUpdate('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    toast({
+      title: 'Success',
+      description: 'Profile photo removed.',
+    });
   };
 
   const fetchRecentBookings = async () => {
@@ -184,15 +268,66 @@ export default function MyProfile() {
           <CardContent>
             <div className="flex flex-col md:flex-row gap-6">
               <div className="flex flex-col items-center md:items-start">
-                <Avatar className="h-24 w-24 mb-4">
-                  <AvatarImage src={userProfile?.profile_photo || user?.user_metadata?.avatar_url} />
-                  <AvatarFallback className="text-2xl">
-                    {userProfile?.full_name?.charAt(0) || 'U'}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="relative group">
+                  <Avatar className="h-24 w-24 mb-4">
+                    <AvatarImage src={photoPreview || userProfile?.profile_photo || user?.user_metadata?.avatar_url} />
+                    <AvatarFallback className="text-2xl">
+                      {userProfile?.full_name?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="bg-black bg-opacity-50 rounded-full h-24 w-24 flex items-center justify-center">
+                      <Camera className="h-8 w-8 text-white" />
+                    </div>
+                  </div>
+                </div>
+                
                 <div className="text-center md:text-left">
                   <h2 className="text-2xl font-bold">{userProfile?.full_name || 'User'}</h2>
                   <p className="text-muted-foreground">Member since {userProfile?.created_at ? format(new Date(userProfile.created_at), 'MMMM yyyy') : 'Unknown'}</p>
+                </div>
+                
+                {/* Photo Upload Controls */}
+                <div className="mt-4 space-y-2 w-full max-w-xs">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    id="profile-photo-upload-header"
+                  />
+                  
+                  <label htmlFor="profile-photo-upload-header">
+                    <Button variant="outline" className="w-full cursor-pointer" asChild>
+                      <span className="flex items-center gap-2">
+                        <Camera className="h-4 w-4" />
+                        Change Photo
+                      </span>
+                    </Button>
+                  </label>
+
+                  {(photoPreview || userProfile?.profile_photo) && (
+                    <div className="flex gap-2">
+                      {photoPreview && (
+                        <Button 
+                          onClick={handleUploadPhoto} 
+                          disabled={isUploadingPhoto}
+                          className="flex-1"
+                        >
+                          {isUploadingPhoto ? 'Saving...' : 'Save Photo'}
+                        </Button>
+                      )}
+                      <Button 
+                        variant="outline" 
+                        onClick={handleRemovePhoto}
+                        className="flex-1"
+                      >
+                        Remove Photo
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -229,25 +364,6 @@ export default function MyProfile() {
                   </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Profile Photo Upload */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Profile Photo
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-center">
-              <ProfilePhotoUpload
-                currentPhoto={userProfile?.profile_photo}
-                fullName={userProfile?.full_name}
-                onPhotoChange={handleProfilePhotoUpdate}
-              />
             </div>
           </CardContent>
         </Card>
