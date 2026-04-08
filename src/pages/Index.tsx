@@ -7,7 +7,7 @@ import HotelCard from '@/components/HotelCard';
 import { Search } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
-const LOCATIONS = ['All', 'Kathmandu', 'Pokhara', 'Chitwan', 'Lumbini'];
+const LOCATIONS = ['All', 'Kathmandu', 'Pokhara', 'Chitwan', 'Lumbini', 'Annapurna'];
 
 export default function Index() {
   const [hotels, setHotels] = useState<Tables<'hotels'>[]>([]);
